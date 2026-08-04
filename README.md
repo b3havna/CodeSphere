@@ -14,6 +14,34 @@ Are you tired of sending code snippets back and forth, struggling to debug and c
 - Users can choose theme based on their preferences
 - Users can leave the room and rejoin later to continue editing
 - Joining & leaving of users is also reflected in real time
+- Real-time Group Chat sidebar inside each room with:
+  - Collapse/expand toggle button
+  - Unread message badge indicator when the chat is collapsed
+  - Safe HTML-escaped JSX plain text rendering (preventing XSS vulnerabilities)
+  - Sliding-window rate limiting (max 5 messages per 3 seconds per user) to prevent spamming
+  - *In-Memory History*: Chat history is stored in-memory per-room on the server and synced to new joiners. It persists only while at least one user remains in the room and is automatically cleared once the room becomes empty.
+- Personal AI Coding Assistant sidebar inside each room with:
+  - Collapse/expand toggle button (separate Spark/AI icon)
+  - Interacts with the **Anthropic API** (model `claude-sonnet-4-6`) on the backend (API key never exposed to the client)
+  - Code block parser offering **"Insert into Editor"** (inserts code at current cursor position in CodeMirror and syncs to all users) and **"Copy"** actions
+  - Simple 3-second cooldown rate-limiting per client socket ID to prevent spam
+  - Length-cap validation (prompt + code context combined <= 6000 characters)
+  - Safe render of responses to prevent XSS
+  - *Single-turn Stateless API*: To remain lightweight, each request is fully stateless (sends only latest prompt + editor code), though the client UI maintains a running visual conversation log.
+- **Real-Time Code Execution (Run Code)**:
+  - Execute current editor code on a secure execution engine (proxied to Judge0 CE API via RapidAPI).
+  - Supports multiple languages: **JavaScript (Node.js)**, **Python**, **C++**, and **Java**.
+  - In-browser split-view execution terminal showing Status Badges (Accepted, Compilation Error, Runtime Error, Time Limit Exceeded) and resources metrics (time, memory).
+  - Custom input values (stdin) section.
+  - Proxy-side base64 content encoding/decoding to prevent escape-character bugs or payload corruption.
+  - Per-client 5-second execution rate-limiting cooldown and a 10,000-character combined payload limit.
+  - Abort controller timeout safeguard of 15 seconds to prevent hanging requests on busy external APIs.
+- **MongoDB-Backed Room & Chat Persistence**:
+  - Automatically saves room code and language settings to MongoDB.
+  - Retains complete chat history chronologically by Room ID, making conversation permanent.
+  - Hybrid saving strategy: debounces database writes by 2 seconds after typing stops, and triggers an interval-based force-save every 10 seconds during active writing.
+  - Restores the exact code state and room language automatically when a collaborator joins or rejoins.
+  - Employs fail-safe database error-catching to isolate Mongoose write errors from interrupting live collaboration or Socket.io connection cleanups.
 
 ### Prerequisites
 
@@ -128,6 +156,19 @@ git push origin your_branch_name
 7. Finally, create a pull request by visiting your forked repository on GitHub
 
 **Note:** Please make sure to use your own branch when contributing.
+
+## Authentication & Room Ownership (Optional)
+
+CodeSphere now supports optional user registration, login sessions, and room ownership tracking:
+* **Anonymous Guest Mode**: Users can still create and join rooms, edit code, use the chat, and execute programs without logging in.
+* **MERN Authentication**:
+  * **Signup (`POST /api/auth/signup`)**: Register using a unique username, email, and password.
+  * **Login (`POST /api/auth/login`)**: Authenticate via username or email. Password verification is computed securely using `bcryptjs` hashing. On success, a JWT is returned.
+  * **Current User Session (`GET /api/auth/me`)**: Restores persistent login states when users refresh the page.
+* **Creator Room Persistence (`GET /api/rooms/mine`)**:
+  * Associates newly initialized room documents with their logged-in creator.
+  * Displays a dashboard of saved rooms on the home screen for quick rejoins.
+  * Excludes heavy content payloads to return lightweight index mappings.
 
 ## About Me
 

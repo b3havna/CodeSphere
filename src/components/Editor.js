@@ -116,15 +116,24 @@ const Editor = React.forwardRef(({ socketRef, roomId, onCodeChange }, ref) => {
     setCode: (code) => {
       editorRef.current.setValue(code);
     },
+    insertCode: (code) => {
+      if (editorRef.current) {
+        const doc = editorRef.current.getDoc();
+        const cursor = doc.getCursor();
+        doc.replaceRange(code, cursor);
+        editorRef.current.focus();
+      }
+    }
   }));
 
 
   useEffect(() => {
     async function init() {
+      const modeName = lang === 'cpp' || lang === 'java' ? 'clike' : lang;
       editorRef.current = Codemirror.fromTextArea(
         document.getElementById("realtimeEditor"),
         {
-          mode: { name: lang },
+          mode: { name: modeName },
           theme: editorTheme,
           autoCloseTags: true,
           autoCloseBrackets: true,
@@ -146,6 +155,13 @@ const Editor = React.forwardRef(({ socketRef, roomId, onCodeChange }, ref) => {
       });
     }
     init();
+
+    return () => {
+      if (editorRef.current) {
+        editorRef.current.toTextArea();
+        editorRef.current = null;
+      }
+    };
   }, [lang]);
 
   useEffect(() => {
