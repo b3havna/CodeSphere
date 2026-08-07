@@ -6,7 +6,7 @@ const http = require('http');
 const path = require('path');
 const { Server } = require('socket.io');
 
-const ACTIONS = require('./src/actions/Actions');
+const ACTIONS = require('./actions/Actions');
 const connectDB = require('./config/db');
 const Room = require('./models/Room');
 const Message = require('./models/Message');
@@ -16,17 +16,34 @@ const jwt = require('jsonwebtoken');
 connectDB();
 
 const server = http.createServer(app);
-const io = new Server(server);
+
+// Parse allowed frontend origins from environment variables
+const allowedOrigins = process.env.FRONTEND_URLS
+    ? process.env.FRONTEND_URLS.split(",").map(url => url.trim())
+    : ["http://localhost:3000"];
+
+// Configure Socket.io with proper multi-origin CORS support
+const io = new Server(server, {
+    cors: {
+        origin: allowedOrigins,
+        methods: ["GET", "POST"],
+        credentials: true
+    }
+});
 
 // Import authentication and rooms routes
 const authRoutes = require('./routes/auth');
 const roomsRoutes = require('./routes/rooms');
 
-app.use(cors());
+// Configure Express with proper multi-origin CORS support
+app.use(cors({
+    origin: allowedOrigins,
+    credentials: true
+}));
+
 app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/rooms', roomsRoutes);
-app.use(express.static('build'));
 
 // In-memory rate limiting for AI assistant (socketId -> lastRequestTimestamp)
 const aiRateLimits = {};
@@ -242,14 +259,6 @@ app.post('/api/execute', async (req, res) => {
     }
 });
 
-app.use((req, res, next) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'), (err) => {
-        if (err) {
-            res.status(err.status || 500).send("Build directory not found. Please run 'npm run build' or access the development server on port 3000.");
-        }
-    });
-});
-
 const { v4: uuidv4 } = require('uuid');
 
 const userSocketMap = {};
@@ -258,7 +267,6 @@ const activeRooms = new Map();
 // Rate limiting storage: socketId -> Array of message timestamps (sliding window)
 const socketRateLimits = {};
 function getAllConnectedClients(roomId) {
-    // Map
     return Array.from(io.sockets.adapter.rooms.get(roomId) || []).map(
         (socketId) => {
             return {
@@ -548,12 +556,13 @@ io.on('connection', (socket) => {
     });
 });
 
-// Serve response in production
+// Serve response in production (e.g. Render health checks)
 app.get('/', (req, res) => {
     const htmlContent = '<h1>Welcome to the code editor server</h1>';
     res.setHeader('Content-Type', 'text/html');
     res.send(htmlContent);
 });
 
-const PORT = process.env.SERVER_PORT || 5000;
+// Support standard PORT environment variable for Render, falling back to SERVER_PORT or 5000
+const PORT = process.env.PORT || process.env.SERVER_PORT || 5000;
 server.listen(PORT, () => console.log(`Listening on port ${PORT}`));

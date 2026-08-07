@@ -39,7 +39,7 @@ const AIAssistant = ({ socketId, getCurrentCode, onInsertCode, isOpen, toggleAI 
             }
 
             // 3. Post request to single-turn API endpoint (stateless backend)
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/ai-assist`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/ai-assist`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

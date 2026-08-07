@@ -3,46 +3,40 @@ import { useNavigate, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 
-const Signup = () => {
-    const { signup } = useContext(AuthContext);
+const Login = () => {
+    const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const [username, setUsername] = useState('');
-    const [email, setEmail] = useState('');
+    const [usernameOrEmail, setUsernameOrEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleSignup = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
 
-        if (!username.trim() || !email.trim() || !password) {
+        if (!usernameOrEmail.trim() || !password) {
             toast.error('All fields are required');
-            return;
-        }
-
-        if (password.length < 6) {
-            toast.error('Password must be at least 6 characters long');
             return;
         }
 
         setLoading(true);
         try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/signup`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ username, email, password })
+                body: JSON.stringify({ usernameOrEmail, password })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to sign up');
+                throw new Error(data.error || 'Invalid credentials');
             }
 
-            signup(data.token, data.user);
-            toast.success('Account created successfully!');
+            login(data.token, data.user);
+            toast.success('Logged in successfully!');
             navigate('/');
         } catch (err) {
             toast.error(err.message);
@@ -59,39 +53,31 @@ const Signup = () => {
                     src="/logo.png"
                     alt="code-sync-logo"
                 />
-                <h4 className="mainLabel">Create Account</h4>
-                <form onSubmit={handleSignup} className="inputGroup">
+                <h4 className="mainLabel">Login to CodeSphere</h4>
+                <form onSubmit={handleLogin} className="inputGroup">
                     <input
                         type="text"
                         className="inputBox"
-                        placeholder="USERNAME"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        disabled={loading}
-                    />
-                    <input
-                        type="email"
-                        className="inputBox"
-                        placeholder="EMAIL"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="USERNAME OR EMAIL"
+                        value={usernameOrEmail}
+                        onChange={(e) => setUsernameOrEmail(e.target.value)}
                         disabled={loading}
                     />
                     <input
                         type="password"
                         className="inputBox"
-                        placeholder="PASSWORD (MIN 6 CHARS)"
+                        placeholder="PASSWORD"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
                     />
                     <button type="submit" className="btn joinBtn" disabled={loading}>
-                        {loading ? 'Creating...' : 'Sign Up'}
+                        {loading ? 'Logging in...' : 'Login'}
                     </button>
                     <span className="createInfo">
-                        Already have an account? &nbsp;
-                        <Link to="/login" className="createNewBtn">
-                            Login
+                        Don't have an account? &nbsp;
+                        <Link to="/signup" className="createNewBtn">
+                            Sign Up
                         </Link>
                     </span>
                     <span className="createInfo" style={{ marginTop: '8px' }}>
@@ -106,4 +92,4 @@ const Signup = () => {
     );
 };
 
-export default Signup;
+export default Login;

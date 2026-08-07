@@ -24,7 +24,7 @@ const Home = () => {
         if (token) {
             const fetchMyRooms = async () => {
                 try {
-                    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/rooms/mine`, {
+                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/rooms/mine`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${token}`

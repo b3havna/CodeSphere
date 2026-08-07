@@ -182,7 +182,7 @@ const EditorPage = () => {
     setOutputOpen(true); // Open the bottom terminal drawer automatically
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/execute`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/execute`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

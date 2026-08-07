@@ -10,5 +10,5 @@ export const initSocket = async (token) => {
             token: token || ""
         }
     };
-    return io(process.env.REACT_APP_BACKEND_URL, options);
+    return io(process.env.REACT_APP_API_URL, options);
 };

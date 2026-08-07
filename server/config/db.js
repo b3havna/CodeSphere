@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const connectDB = async () => {
-    const mongoURI = process.env.MONGODB_URI;
+    const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI;
     if (!mongoURI) {
-        console.error('CRITICAL ERROR: MONGODB_URI environment variable is not defined!');
+        console.error('CRITICAL ERROR: MONGO_URI (or MONGODB_URI) environment variable is not defined!');
         console.error('The server requires a valid MongoDB connection string to enforce room persistence.');
         process.exit(1);
     }

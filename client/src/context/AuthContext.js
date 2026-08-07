@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
             const savedToken = localStorage.getItem('token');
             if (savedToken) {
                 try {
-                    const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/auth/me`, {
+                    const response = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/me`, {
                         method: 'GET',
                         headers: {
                             'Authorization': `Bearer ${savedToken}`
