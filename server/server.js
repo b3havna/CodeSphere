@@ -170,11 +170,21 @@ app.post('/api/execute', async (req, res) => {
     }
 
     // 4. Map language string to JDoodle configurations
+    // Note: This map must stay in sync with EXECUTABLE_LANGUAGES in client/src/pages/EditorPage.js
     const languageMap = {
         'javascript': { language: 'nodejs', versionIndex: '5' }, // Node.js 22.0.0
         'python': { language: 'python3', versionIndex: '5' },     // Python 3.12.0
         'cpp': { language: 'cpp17', versionIndex: '0' },          // GCC 11.1.0 (C++17)
-        'java': { language: 'java', versionIndex: '4' }           // JDK 17.0.1
+        'java': { language: 'java', versionIndex: '4' },          // JDK 17.0.1
+        'php': { language: 'php', versionIndex: '6' },            // PHP 7.0
+        'ruby': { language: 'ruby', versionIndex: '6' },          // Ruby 7.0
+        'go': { language: 'go', versionIndex: '6' },              // Go 7.0
+        'swift': { language: 'swift', versionIndex: '6' },        // Swift 7.0
+        'r': { language: 'r', versionIndex: '6' },                // R 7.0
+        'dart': { language: 'dart', versionIndex: '6' },          // Dart 7.0
+        'sql': { language: 'sql', versionIndex: '5' },            // SQL 6.0
+        'shell': { language: 'bash', versionIndex: '5' },         // Bash 6.0
+        'rust': { language: 'rust', versionIndex: '6' }           // Rust 7.0
     };
 
     const targetConfig = languageMap[language];

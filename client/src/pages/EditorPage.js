@@ -17,6 +17,23 @@ import Chat from "../components/Chat";
 import AIAssistant from "../components/AIAssistant";
 import { AuthContext } from "../context/AuthContext";
 
+// Note: This Set must stay in sync with server/server.js's languageMap
+const EXECUTABLE_LANGUAGES = new Set([
+  "cpp",
+  "java",
+  "javascript",
+  "python",
+  "php",
+  "ruby",
+  "go",
+  "swift",
+  "r",
+  "dart",
+  "sql",
+  "shell",
+  "rust",
+]);
+
 const EditorPage = () => {
   const [lang, setLang] = useRecoilState(language);
   const [them, setThem] = useRecoilState(cmtheme);
@@ -173,6 +190,11 @@ const EditorPage = () => {
     const source_code = codeRef.current || "";
     if (!source_code.trim()) {
       toast.error("Please write some code first before running!");
+      return;
+    }
+
+    if (!EXECUTABLE_LANGUAGES.has(lang)) {
+      toast.error("Code execution isn't available for this language yet.");
       return;
     }
 
@@ -375,26 +397,26 @@ const EditorPage = () => {
           >
             <option value="cpp">C++</option>
             <option value="java">Java</option>
-            <option value="css">CSS</option>
+            <option value="css">CSS (edit only)</option>
             <option value="dart">Dart</option>
-            <option value="django">Django</option>
-            <option value="dockerfile">Dockerfile</option>
+            <option value="django">Django (edit only)</option>
+            <option value="dockerfile">Dockerfile (edit only)</option>
             <option value="go">Go</option>
-            <option value="htmlmixed">HTML-mixed</option>
+            <option value="htmlmixed">HTML-mixed (edit only)</option>
             <option value="javascript">JavaScript</option>
-            <option value="jsx">JSX</option>
-            <option value="markdown">Markdown</option>
+            <option value="jsx">JSX (edit only)</option>
+            <option value="markdown">Markdown (edit only)</option>
             <option value="php">PHP</option>
             <option value="python">Python</option>
             <option value="r">R</option>
             <option value="rust">Rust</option>
             <option value="ruby">Ruby</option>
-            <option value="sass">Sass</option>
+            <option value="sass">Sass (edit only)</option>
             <option value="shell">Shell</option>
             <option value="sql">SQL</option>
             <option value="swift">Swift</option>
-            <option value="xml">XML</option>
-            <option value="yaml">yaml</option>
+            <option value="xml">XML (edit only)</option>
+            <option value="yaml">yaml (edit only)</option>
           </select>
         </label>
 
@@ -517,7 +539,16 @@ const EditorPage = () => {
           Download
         </button>
 
-        <button className="runCodeBtn" onClick={runCode} disabled={executing} title="Run Code">
+        <button
+          className="runCodeBtn"
+          onClick={runCode}
+          disabled={executing || !EXECUTABLE_LANGUAGES.has(lang)}
+          title={
+            EXECUTABLE_LANGUAGES.has(lang)
+              ? "Run Code"
+              : "Execution isn't supported for this language yet — try JavaScript, Python, C++, Java, PHP, Ruby, Go, Swift, R, Dart, SQL, or Shell."
+          }
+        >
           <svg style={{ width: '16px', height: '16px', fill: 'currentColor' }} viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z"/>
           </svg>
