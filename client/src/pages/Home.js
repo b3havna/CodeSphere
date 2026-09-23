@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { v4 as uuidV4 } from 'uuid';
 import toast from 'react-hot-toast';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -42,11 +41,46 @@ const Home = () => {
         }
     }, [token]);
 
-    const createNewRoom = (e) => {
+    const createNewRoom = async (e) => {
         e.preventDefault();
-        const id = uuidV4();
-        setRoomId(id);
-        toast.success('Created a new room');
+
+        // Redirect guests to login page if attempting to create a room
+        if (!user || !token) {
+            toast.error('Please login to create a room');
+            navigate('/login');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/api/rooms`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create room');
+            }
+
+            setRoomId(data.roomId);
+            toast.success('Created a new room');
+
+            // Prepend new room to the user's persisted rooms list
+            setMyRooms((prev) => [
+                {
+                    roomId: data.roomId,
+                    language: 'javascript',
+                    updatedAt: new Date().toISOString()
+                },
+                ...prev
+            ]);
+        } catch (err) {
+            toast.error(err.message || 'Error creating room');
+        }
     };
 
     const joinRoom = () => {
