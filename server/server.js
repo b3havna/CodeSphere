@@ -365,18 +365,24 @@ io.on('connection', (socket) => {
             if (roomDoc) {
                 roomCode = roomDoc.code || '';
                 roomLanguage = roomDoc.language || 'javascript';
-            } else {
-                // If it does not exist, create it in MongoDB.
-                // If socket.user exists, associate with the user. Otherwise createdBy is null.
-                const creatorId = socket.user ? socket.user.id : null;
+            } else if (socket.user) {
+                // If it does not exist and socket is authenticated, create it in MongoDB.
                 await Room.create({
                     roomId,
                     code: '',
                     language: 'javascript',
-                    createdBy: creatorId
+                    createdBy: socket.user.id
                 });
                 roomCode = '';
                 roomLanguage = 'javascript';
+            } else {
+                // If it does not exist and socket is not authenticated (guest), reject room creation
+                socket.emit('room-error', {
+                    message: 'Room not found. Log in to create a new room.'
+                });
+                socket.leave(roomId);
+                delete userSocketMap[socket.id];
+                return;
             }
 
             // 2. Initialize activeRooms Map entry if not already present

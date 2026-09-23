@@ -126,6 +126,12 @@ const EditorPage = () => {
         toast.error(message);
       });
 
+      // Listening for room error notifications
+      socketRef.current.on("room-error", ({ message }) => {
+        toast.error(message);
+        reactNavigator("/");
+      });
+
       // Listening for initial room state from MongoDB
       socketRef.current.on('init-room-state', ({ code, language: savedLang }) => {
         if (savedLang && savedLang !== lang) {
@@ -151,6 +157,7 @@ const EditorPage = () => {
       socketRef.current.off(ACTIONS.SYNC_CHAT);
       socketRef.current.off(ACTIONS.RECEIVE_MESSAGE);
       socketRef.current.off("chat-error");
+      socketRef.current.off("room-error");
       socketRef.current.off("init-room-state");
       socketRef.current.off("room-language-changed");
       socketRef.current.disconnect();
